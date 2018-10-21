@@ -24,7 +24,7 @@ module Make(IP : Mirage_protocols_lwt.IPV4) = struct
   let disconnect _ = Lwt.return_unit
 
   let writev t ~dst bufs =
-    let frame, header_len = IP.allocate_frame t.ip ~dst ~proto:`ICMP in
+    let frame, header_len = IP.allocate_frame t.ip ~dst ~src:None ~proto:`ICMP in
     let frame = Cstruct.set_len frame header_len in
     IP.writev t.ip frame bufs >|= function
     | Ok () as o -> o

@@ -54,16 +54,16 @@ module Make(Ip: Mirage_protocols_lwt.IP)(Random:Mirage_random.C) = struct
       | Some fn ->
         fn ~src ~dst ~src_port payload
 
-  let writev ?src_port ~dst ~dst_port t bufs =
+  let writev ?src ?src_port ~dst ~dst_port t bufs =
     let src_port = match src_port with
       | None   -> Randomconv.int ~bound:65535 (fun x -> Random.generate x)
       | Some p -> p
     in
     let payload_size = Cstruct.lenv bufs in
-    let frame, header_len = Ip.allocate_frame t.ip ~dst:dst ~proto:`UDP in
+    let frame, header_len = Ip.allocate_frame t.ip ~dst:dst ~src ~proto:`UDP in
     let frame = Cstruct.set_len frame header_len in
     let ph =
-      Ip.pseudoheader t.ip ~dst ~proto:`UDP (payload_size + Udp_wire.sizeof_udp)
+      Ip.pseudoheader t.ip ~dst ~src ~proto:`UDP (payload_size + Udp_wire.sizeof_udp)
     in
     let udp_header = Udp_packet.({ src_port; dst_port; }) in
     let udp_buf =
@@ -77,8 +77,8 @@ module Make(Ip: Mirage_protocols_lwt.IP)(Random:Mirage_random.C) = struct
       (* we're supposed to make our best effort, and we did *)
       Ok ()
 
-  let write ?src_port ~dst ~dst_port t buf =
-    writev ?src_port ~dst ~dst_port t [buf]
+  let write ?src ?src_port ~dst ~dst_port t buf =
+    writev ?src ?src_port ~dst ~dst_port t [buf]
 
   let connect ip =
     let ips = List.map Ip.to_uipaddr @@ Ip.get_ip ip in

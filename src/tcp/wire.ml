@@ -45,7 +45,7 @@ module Make (Ip:Mirage_protocols_lwt.IP) = struct
     Fmt.pf ppf "remote %a,%d to local %a, %d"
       Ipaddr.pp_hum (uip t.dst) t.dst_port Ipaddr.pp_hum (uip t.src) t.src_port
 
-  let xmit ~ip { src_port; dst_port; dst; _ } ?(rst=false) ?(syn=false)
+  let xmit ~ip { src_port; dst_port; dst; src } ?(rst=false) ?(syn=false)
       ?(fin=false) ?(psh=false)
       ~rx_ack ~seq ~window ~options payload
     =
@@ -60,10 +60,10 @@ module Make (Ip:Mirage_protocols_lwt.IP) = struct
         src_port; dst_port;
       } in
     (* Make a TCP/IP header frame *)
-    let frame, header_len = Ip.allocate_frame ip ~dst ~proto:`TCP in
+    let frame, header_len = Ip.allocate_frame ip ~dst ~src:(Some src) ~proto:`TCP in
     (* Shift this out by the combined ethernet + IP header sizes *)
     let tcp_buf = Cstruct.shift frame header_len in
-    let pseudoheader = Ip.pseudoheader ip ~dst ~proto:`TCP
+    let pseudoheader = Ip.pseudoheader ip ~dst ~src:(Some src) ~proto:`TCP
       (Tcp_wire.sizeof_tcp + Options.lenv options + Cstruct.len payload) in
     match Tcp_packet.Marshal.into_cstruct header tcp_buf ~pseudoheader ~payload with
     | Error s ->

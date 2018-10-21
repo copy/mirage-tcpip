@@ -43,8 +43,9 @@ module Make (R: Mirage_random.C) (C: Mirage_clock.MCLOCK) (Ethif: Mirage_protoco
 
   let adjust_output_header = Ipv4_common.adjust_output_header ~rng:R.generate
 
-  let allocate_frame t ~(dst:ipaddr) ~(proto : [`ICMP | `TCP | `UDP]) : (buffer * int) =
-    Ipv4_common.allocate_frame ~src:t.ip ~source:(Ethif.mac t.ethif) ~dst ~proto
+  let allocate_frame t ~(dst:ipaddr) ~(src:ipaddr option) ~(proto : [`ICMP | `TCP | `UDP]) : (buffer * int) =
+    let src = match src with Some s -> s | None -> t.ip in
+    Ipv4_common.allocate_frame ~src ~source:(Ethif.mac t.ethif) ~dst ~proto
 
   let writev t frame bufs : (unit, error) result Lwt.t =
     let v4_frame = Cstruct.shift frame Ethif_wire.sizeof_ethernet in
@@ -115,8 +116,9 @@ module Make (R: Mirage_random.C) (C: Mirage_clock.MCLOCK) (Ethif: Mirage_protoco
 
   let get_ip t = [t.ip]
 
-  let pseudoheader t ~dst ~proto len =
-    Ipv4_packet.Marshal.pseudoheader ~src:t.ip ~dst ~proto len
+  let pseudoheader t ~dst ~src ~proto len =
+    let src = match src with None -> t.ip | Some s -> s in
+    Ipv4_packet.Marshal.pseudoheader ~src ~dst ~proto len
 
   let checksum = Ipv4_common.checksum
 

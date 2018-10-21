@@ -37,7 +37,7 @@ let connect _ = return_unit
 
 let input_arpv4 _ _ = fail (Failure "Not implemented")
 let input _ ~tcp:_ ~udp:_ ~default:_ _ = return_unit
-let allocate_frame _ ~dst:_ ~proto:_ = raise (Failure "Not implemented")
+let allocate_frame _ ~dst:_ ~src:_ ~proto:_ = raise (Failure "Not implemented")
 let write _ _ _ = fail (Failure "Not implemented")
 let writev _ _ _ = fail (Failure "Not implemented")
 

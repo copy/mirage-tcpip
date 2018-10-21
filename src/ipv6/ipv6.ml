@@ -54,7 +54,7 @@ module Make (E : Mirage_protocols_lwt.ETHIF)
     in
     loop ()
 
-  let allocate_frame t ~dst ~proto =
+  let allocate_frame t ~dst ~src:_ ~proto =
     Ndpv6.allocate_frame t.ctx dst proto
 
   let mtu t =
