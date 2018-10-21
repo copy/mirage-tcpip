@@ -1,6 +1,7 @@
 (jbuild_version 1)
 (executables
  ((names (test))
+  (flags (:standard -warn-error A-26-27))
   (libraries (
     alcotest mirage-random-test lwt.unix io-page-unix tcpip.unix
     logs logs.fmt mirage-profile mirage-flow mirage-vnetif
